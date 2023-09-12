@@ -1,69 +1,79 @@
-import { ethers } from 'hardhat';
+import { ethers } from "hardhat";
 
 async function main() {
-  const uniRouter = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
-  const unifactRouter = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f';
-  const usdc = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
-  const dai = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
-
   const currentTimestampInSeconds = Math.round(Date.now() / 1000);
   const deadline = currentTimestampInSeconds + 86400;
 
-  const tokenHolder = '0x20bB82F2Db6FF52b42c60cE79cDE4C7094Ce133F';
+    const UniswapAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+    const usdtAddress = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+    const daiAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
+    const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+    const holder = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
 
-  const uniSwapContract = await ethers.getContractAt('IUniswap', uniRouter);
-  const unifactRouterContract = await ethers.getContractAt(
-    'IUniswapV2Factory',
-    unifactRouter
-  );
-  const usdcContract = await ethers.getContractAt('IERC20', usdc);
-  const daiContract = await ethers.getContractAt('IERC20', dai);
-  const amountToapprove = ethers.parseEther('3');
-  const amountADesired = ethers.parseEther('2');
-  const amountBDesired = ethers.parseEther('2');
-  const amountAMin = ethers.parseEther('0');
-  const amountBMin = ethers.parseEther('0');
+  
 
-  const tokenHolderSigner = await ethers.getImpersonatedSigner(tokenHolder);
-  const to = tokenHolderSigner;
+    const ImpersonateHolder = await ethers.getImpersonatedSigner(holder);
 
-  //approving the uniswap contract
-  await usdcContract
-    .connect(tokenHolderSigner)
-    .approve(uniSwapContract, amountToapprove);
-  await daiContract
-    .connect(tokenHolderSigner)
-    .approve(uniSwapContract, amountToapprove);
+    const uniswap =  await ethers.getContractAt("IUniswap", UniswapAddress);
+    const usdt = await ethers.getContractAt("IERC20", usdtAddress);
+    const dai = await ethers.getContractAt("IERC20", daiAddress);
+    const weth = await ethers.getContractAt("IERC20", wethAddress);
 
-  //adding liquidity
-  await uniSwapContract
-    .connect(tokenHolderSigner)
-    .addLiquidity(
-      usdc,
-      dai,
-      amountADesired,
-      amountBDesired,
-      amountAMin,
-      amountBMin,
-      to,
-      deadline
+    const factory = await uniswap.factory();
+    const uniswapFactory = await ethers.getContractAt(
+    "IUniswapV2Factory",
+    factory
     );
 
-  const getpair = await unifactRouterContract
-    .connect(tokenHolderSigner)
-    .getPair(usdc, dai);
-  console.log(getpair);
+    const pairAddress = await uniswapFactory.getPair(usdtAddress, daiAddress);
+    console.log(pairAddress);
+    const pair = await ethers.getContractAt("IERC20", pairAddress);
 
-  const pair = await ethers.getContractAt('IERC20', getpair);
-  const pairBalance = await pair.
 
-  // remove lquidity
 
-  // await uniSwapContract.connect(tokenHolderSigner).removeLiquidity(usdc, dai)
+    const amountADesired = ethers.parseEther("20");
+    const amountBDesired = ethers.parseEther("20");
+
+    const approveAmt = ethers.parseEther("1000000000");
+
+
+
+    console.log("approving");
+
+    await usdt.connect(ImpersonateHolder).approve(uniswap, approveAmt);
+    await dai.connect(ImpersonateHolder).approve(uniswap, approveAmt);
+    await pair.connect(ImpersonateHolder).approve(uniswap, approveAmt);
+
+    console.log("approved");
+
+    console.log("holder usdt balance before adding liquidity" + " " + await usdt.balanceOf(holder));
+    console.log("holder dai balance before adding liquidity" + " " + await dai.balanceOf(holder));
+    console.log("pair balance before adding liquidity:" + " " + await pair.balanceOf(holder));
+
+    console.log("adding liquidity");
+
+    await uniswap.connect(ImpersonateHolder).addLiquidity(usdtAddress, daiAddress, amountADesired, amountBDesired, 0, 0, holder, deadline);
+    
+      const liquidity = await pair.balanceOf(holder);
+    console.log("holder usdt balance after adding liquidity" + " " +await usdt.balanceOf(holder));
+    console.log("holder dai balance after adding liquidity" + " " +await dai.balanceOf(holder));
+    console.log("pair balance after adding liquidity:" + " " + await pair.balanceOf(holder));
+ 
+    console.log("added liquidity");
+
+
+    console.log("removing liquidity");
+
+    await uniswap.connect(ImpersonateHolder).removeLiquidity(usdtAddress, daiAddress, liquidity, 100, 100, holder, deadline);
+    
+    console.log("holder usdt balance after removing liquidity" + " " + await usdt.balanceOf(holder));
+    console.log("holder dai balance after removing liquidity" + " " +await dai.balanceOf(holder));
+    console.log("pair balance after removing liquidity:" + " " + await pair.balanceOf(holder));
+
+    console.log("removed liquidity");
+
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
