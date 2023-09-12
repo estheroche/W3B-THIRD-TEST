@@ -20,12 +20,12 @@ async function main() {
     const weth = await ethers.getContractAt("IERC20", wethAddress);
 
     const factory = await uniswap.factory();
-    const uniswapFactory = await ethers.getContractAt(
+    const IUniswapV2Factory = await ethers.getContractAt(
     "IUniswapV2Factory",
     factory
     );
 
-    const pairAddress = await uniswapFactory.getPair(usdtAddress, daiAddress);
+    const pairAddress = await IUniswapV2Factory.getPair(usdtAddress, daiAddress);
     console.log(pairAddress);
     const pair = await ethers.getContractAt("IERC20", pairAddress);
 
