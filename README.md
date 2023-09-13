@@ -1,3 +1,5 @@
+# VotingSystem = https://sepolia.etherscan.io/address/0x4f88d0be2A1CcC2D63632bB099DfB0504a6B99E6
+
 # DecentralizedVotingSystem
 
 DecentralizedVotingSystem smart contract, appears to be a simple implementation of a decentralized voting system on the Ethereum blockchain. Let's break down its main components and functionalities:
@@ -18,12 +20,12 @@ DecentralizedVotingSystem smart contract, appears to be a simple implementation 
 
 # Events:
 
-        CandidateCreate: An event triggered when a new candidate is added, emitting candidate details.
-        VoterCreate: An event triggered when a new voter is added, emitting voter details.
+- CandidateCreate: An event triggered when a new candidate is added, emitting candidate details.
+- VoterCreate: An event triggered when a new voter is added, emitting voter details.
 
 # Constructor:
 
-        The constructor sets the Admin address to the Ethereum address that deploys the contract.
+The constructor sets the Admin address to the Ethereum address that deploys the contract.
 
 # Functions:
 
